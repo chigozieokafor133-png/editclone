@@ -1,0 +1,9 @@
+# EditClone Core Dependencies
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+python-multipart>=0.0.9
+scenedetect[opencv]>=0.7.0
+librosa>=1.0.0
+opencv-python>=4.9.0
+numpy>=1.26.0
+soundfile>=0.12.1

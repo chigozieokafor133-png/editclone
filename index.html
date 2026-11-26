@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EditClone — AI Video Editor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="bg-[#0b0f17] text-white min-h-screen font-sans antialiased">
+
+  <!-- HEADER -->
+  <header class="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold">EC</div>
+      <span class="text-xl font-bold tracking-tight">EditClone <span class="text-purple-400 text-sm font-normal ml-1">AI</span></span>
+    </div>
+    <div id="systemBadge" class="text-xs px-3 py-1 rounded-full bg-white/5 text-gray-400">Checking system...</div>
+  </header>
+
+  <!-- TABS -->
+  <div class="flex gap-1 px-6 mt-6">
+    <button id="tabClone" onclick="switchTab('clone')"
+      class="tab-btn active px-5 py-2.5 rounded-xl text-sm font-semibold transition-all">
+      🎬 EditClone
+    </button>
+    <button id="tabBeat" onclick="switchTab('beat')"
+      class="tab-btn px-5 py-2.5 rounded-xl text-sm font-semibold transition-all">
+      🎵 Beat Editor
+    </button>
+  </div>
+
+  <!-- ===== TAB: EDITCLONE ===== -->
+  <div id="tabPanelClone" class="tab-panel px-6 py-6 max-w-5xl mx-auto">
+    <p class="text-gray-400 text-sm mb-6">Upload a reference edit + raw footage. AI clones the cuts, transitions, and effects.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <!-- Reference -->
+      <div>
+        <label class="block text-xs font-semibold text-purple-400 uppercase tracking-widest mb-2">Reference Edit</label>
+        <div id="dropRef" class="drop-zone" onclick="document.getElementById('inputRef').click()">
+          <div id="dropRefLabel" class="pointer-events-none">
+            <div class="text-3xl mb-2">🎬</div>
+            <div class="text-sm font-medium">Drop reference video here</div>
+            <div class="text-xs text-gray-500 mt-1">MP4, MOV, AVI</div>
+          </div>
+        </div>
+        <input id="inputRef" type="file" accept="video/*" class="hidden" onchange="handleFile('ref', this)" />
+        <div id="refInfo" class="mt-2 text-xs text-gray-400 hidden"></div>
+      </div>
+
+      <!-- Raw footage -->
+      <div>
+        <label class="block text-xs font-semibold text-pink-400 uppercase tracking-widest mb-2">Raw Footage</label>
+        <div id="dropRaw" class="drop-zone" onclick="document.getElementById('inputRaw').click()">
+          <div id="dropRawLabel" class="pointer-events-none">
+            <div class="text-3xl mb-2">📹</div>
+            <div class="text-sm font-medium">Drop your raw footage here</div>
+            <div class="text-xs text-gray-500 mt-1">MP4, MOV, AVI</div>
+          </div>
+        </div>
+        <input id="inputRaw" type="file" accept="video/*" class="hidden" onchange="handleFile('raw', this)" />
+        <div id="rawInfo" class="mt-2 text-xs text-gray-400 hidden"></div>
+      </div>
+    </div>
+
+    <!-- Options row -->
+    <div class="flex flex-wrap gap-4 items-center mb-6">
+      <div>
+        <label class="text-xs text-gray-400 block mb-1">Output Ratio</label>
+        <select id="aspectRatio" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+          <option value="match_ref">Match Reference</option>
+          <option value="9:16">9:16 Vertical</option>
+          <option value="16:9">16:9 Landscape</option>
+          <option value="1:1">1:1 Square</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 block mb-1">FPS</label>
+        <select id="targetFps" class="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white">
+          <option value="30">30 FPS</option>
+          <option value="60">60 FPS</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Generate button -->
+    <button id="btnGenerate" onclick="startCloneJob()"
+      class="w-full md:w-auto px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled>
+      ⚡ Generate EditClone
+    </button>
+
+    <!-- Progress -->
+    <div id="cloneProgress" class="mt-6 hidden">
+      <div class="flex items-center justify-between mb-2">
+        <span id="cloneStageLabel" class="text-sm text-gray-300">Analyzing...</span>
+        <span id="clonePct" class="text-sm text-purple-400 font-bold">0%</span>
+      </div>
+      <div class="progress-bar-track">
+        <div id="cloneProgressBar" class="progress-bar-fill" style="width:0%"></div>
+      </div>
+      <p id="cloneMsg" class="text-xs text-gray-500 mt-2"></p>
+    </div>
+
+    <!-- Timeline -->
+    <div id="cloneTimeline" class="mt-6 hidden">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Cut Timeline</div>
+      <div id="timelineBlocks" class="timeline-container"></div>
+      <div class="flex gap-4 mt-3 text-xs text-gray-500">
+        <span><span class="inline-block w-3 h-3 rounded bg-purple-500 mr-1"></span>Default</span>
+        <span><span class="inline-block w-3 h-3 rounded bg-yellow-400 mr-1"></span>Flash</span>
+        <span><span class="inline-block w-3 h-3 rounded bg-blue-400 mr-1"></span>Zoom</span>
+        <span><span class="inline-block w-3 h-3 rounded bg-red-400 mr-1"></span>Shake</span>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <div id="cloneDownload" class="mt-6 hidden">
+      <a id="cloneDownloadBtn" href="#" download
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 font-bold text-sm transition-all">
+        ⬇️ Download EditClone MP4
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== TAB: BEAT EDITOR ===== -->
+  <div id="tabPanelBeat" class="tab-panel hidden px-6 py-6 max-w-5xl mx-auto">
+    <p class="text-gray-400 text-sm mb-6">Upload music + raw footage. AI edits your video to the beat with cinematic effects.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <!-- Music -->
+      <div>
+        <label class="block text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-2">🎵 Music Track</label>
+        <div id="dropMusic" class="drop-zone" onclick="document.getElementById('inputMusic').click()">
+          <div id="dropMusicLabel" class="pointer-events-none">
+            <div class="text-3xl mb-2">🎵</div>
+            <div class="text-sm font-medium">Drop music file here</div>
+            <div class="text-xs text-gray-500 mt-1">MP3, WAV, AAC, M4A, FLAC</div>
+          </div>
+        </div>
+        <input id="inputMusic" type="file" accept="audio/*" class="hidden" onchange="handleBeatFile('music', this)" />
+        <div id="musicInfo" class="mt-2 text-xs text-gray-400 hidden"></div>
+      </div>
+
+      <!-- Raw footage -->
+      <div>
+        <label class="block text-xs font-semibold text-orange-400 uppercase tracking-widest mb-2">📹 Raw Footage</label>
+        <div id="dropBeatRaw" class="drop-zone" onclick="document.getElementById('inputBeatRaw').click()">
+          <div id="dropBeatRawLabel" class="pointer-events-none">
+            <div class="text-3xl mb-2">📹</div>
+            <div class="text-sm font-medium">Drop your raw footage here</div>
+            <div class="text-xs text-gray-500 mt-1">MP4, MOV, AVI</div>
+          </div>
+        </div>
+        <input id="inputBeatRaw" type="file" accept="video/*" class="hidden" onchange="handleBeatFile('raw', this)" />
+        <div id="beatRawInfo" class="mt-2 text-xs text-gray-400 hidden"></div>
+      </div>
+    </div>
+
+    <!-- Edit Mode cards -->
+    <div class="mb-6">
+      <label class="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Edit Style</label>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="mode-card selected" data-mode="slow" onclick="selectMode('slow')">
+          <div class="mode-icon">🌊</div>
+          <div class="mode-title">Slow & Cinematic</div>
+          <div class="mode-desc">Cut every 4 beats. Long shots, smooth zooms.</div>
+          <div class="mode-tag">Every 4 beats</div>
+        </div>
+        <div class="mode-card" data-mode="normal" onclick="selectMode('normal')">
+          <div class="mode-icon">🎯</div>
+          <div class="mode-title">Normal Rhythm</div>
+          <div class="mode-desc">Cut every 2 beats. Balanced & punchy.</div>
+          <div class="mode-tag">Every 2 beats</div>
+        </div>
+        <div class="mode-card" data-mode="fast" onclick="selectMode('fast')">
+          <div class="mode-icon">⚡</div>
+          <div class="mode-title">Fast Cut</div>
+          <div class="mode-desc">Cut every beat. Speed ramps on drops.</div>
+          <div class="mode-tag">Every beat</div>
+        </div>
+        <div class="mode-card crazy" data-mode="crazy" onclick="selectMode('crazy')">
+          <div class="mode-icon">🤯</div>
+          <div class="mode-title">CRAZY MODE</div>
+          <div class="mode-desc">Every onset peak. Strobe, invert, zoom surges!</div>
+          <div class="mode-tag">MAX CHAOS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generate button -->
+    <button id="btnBeatGenerate" onclick="startBeatJob()"
+      class="w-full md:w-auto px-8 py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled>
+      🎵 Generate Beat Edit
+    </button>
+
+    <!-- Progress -->
+    <div id="beatProgress" class="mt-6 hidden">
+      <div class="flex items-center justify-between mb-2">
+        <span id="beatStageLabel" class="text-sm text-gray-300">Starting...</span>
+        <span id="beatPct" class="text-sm text-cyan-400 font-bold">0%</span>
+      </div>
+      <div class="progress-bar-track">
+        <div id="beatProgressBar" class="progress-bar-fill cyan" style="width:0%"></div>
+      </div>
+      <p id="beatMsg" class="text-xs text-gray-500 mt-2"></p>
+    </div>
+
+    <!-- Beat info display -->
+    <div id="beatInfoDisplay" class="mt-5 hidden">
+      <div class="flex gap-5 flex-wrap">
+        <div class="stat-pill">
+          <span class="stat-label">BPM</span>
+          <span id="bpmDisplay" class="stat-value text-cyan-400">—</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Cuts</span>
+          <span id="cutsDisplay" class="stat-value text-purple-400">—</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Mode</span>
+          <span id="modeDisplay" class="stat-value text-orange-400">—</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Duration</span>
+          <span id="durDisplay" class="stat-value text-green-400">—</span>
+        </div>
+      </div>
+
+      <!-- Beat waveform canvas -->
+      <div class="mt-4">
+        <div class="text-xs text-gray-500 mb-2">Beat Timeline</div>
+        <canvas id="beatCanvas" class="beat-canvas" width="800" height="80"></canvas>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <div id="beatDownload" class="mt-6 hidden">
+      <a id="beatDownloadBtn" href="#" download
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 font-bold text-sm transition-all">
+        ⬇️ Download Beat Edit MP4
+      </a>
+    </div>
+  </div>
+
+  <script src="/app.js?v=4"></script>
+</body>
+</html>

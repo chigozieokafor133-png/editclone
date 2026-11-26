@@ -1,0 +1,150 @@
+/* EditClone — custom styles */
+
+/* ---- Tabs ---- */
+.tab-btn {
+  background: rgba(255,255,255,0.04);
+  color: #9ca3af;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.tab-btn.active {
+  background: rgba(168, 85, 247, 0.2);
+  color: #fff;
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+/* ---- Drop zones ---- */
+.drop-zone {
+  border: 2px dashed rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255,255,255,0.03);
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: rgba(168, 85, 247, 0.6);
+  background: rgba(168, 85, 247, 0.07);
+  color: #d8b4fe;
+}
+.drop-zone.has-file {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(74, 222, 128, 0.05);
+  color: #86efac;
+}
+
+/* ---- Progress bar ---- */
+.progress-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(to right, #9333ea, #ec4899);
+  transition: width 0.4s ease;
+}
+.progress-bar-fill.cyan {
+  background: linear-gradient(to right, #0891b2, #9333ea);
+}
+
+/* ---- Timeline ---- */
+.timeline-container {
+  display: flex;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  gap: 2px;
+  background: rgba(255,255,255,0.04);
+  padding: 4px;
+}
+.timeline-block {
+  border-radius: 6px;
+  height: 100%;
+  min-width: 6px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: rgba(255,255,255,0.7);
+  overflow: hidden;
+  transition: opacity 0.2s;
+  cursor: default;
+}
+.timeline-block:hover { opacity: 0.8; }
+
+/* ---- Beat mode cards ---- */
+.mode-card {
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 18px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255,255,255,0.03);
+  text-align: center;
+  user-select: none;
+}
+.mode-card:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.07);
+}
+.mode-card.selected {
+  border-color: rgba(168, 85, 247, 0.8);
+  background: rgba(168, 85, 247, 0.12);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.15);
+}
+.mode-card.crazy.selected {
+  border-color: rgba(239, 68, 68, 0.8);
+  background: rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.15);
+}
+.mode-icon { font-size: 2rem; margin-bottom: 8px; }
+.mode-title { font-weight: 700; font-size: 0.875rem; margin-bottom: 4px; }
+.mode-desc { font-size: 0.72rem; color: #9ca3af; line-height: 1.4; margin-bottom: 8px; }
+.mode-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  color: #a78bfa;
+  display: inline-block;
+}
+
+/* ---- Stat pills ---- */
+.stat-pill {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 80px;
+}
+.stat-label { font-size: 0.65rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+.stat-value { font-size: 1.1rem; font-weight: 700; }
+
+/* ---- Beat canvas ---- */
+.beat-canvas {
+  width: 100%;
+  height: 80px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: block;
+}
